@@ -1,0 +1,261 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+
+    var date = ViewBag.Date;
+    var student = ViewBag.Item;
+    var list = ViewBag.List;
+}
+
+@model WebApplication5.Models.Item
+
+@Styles.Render("~/Content/Site.css")
+
+
+@*<div id="wb_Text1" style="position:absolute;left:442px;top:132px;width:339px;height:29px;z-index:7;">
+        <span style="color:#000000;font-family:Calibri;font-size:21px;">AA</span><span style="color:#000000;font-family:微軟正黑體;font-size:21px;"> 製造庫存材料新增作業</span>
+    </div>
+    <div id="wb_Form1" style="position:absolute;left:255px;top:194px;width:657px;height:168px;z-index:8;">
+        <form style="margin-left:10px;" method="post" action="/Home/Transcripts">
+            <label for="Editbox1" id="Label1" style="position:absolute;left:10px;top:15px;width:61px;height:27px;line-height:27px;z-index:0;">料號:</label>
+            <input type="text" id="id" style="position:absolute;left:89px;top:15px;width:190px;height:21px;z-index:1;" name="id" value="@Model.id" spellcheck="false">
+            <label for="Editbox2" id="Label2" style="position:absolute;left:336px;top:18px;width:61px;height:21px;line-height:21px;z-index:2;">名稱:</label>
+            <input type="text" id="name" style="position:absolute;left:418px;top:18px;width:190px;height:21px;z-index:3;" name="name" value="@Model.name" spellcheck="false">
+            <label for="Editbox3" id="Label3" style="position:absolute;left:10px;top:50px;width:61px;height:21px;line-height:21px;z-index:4;">數量:</label>
+            <input type="text" id="number" style="position:absolute;left:89px;top:50px;width:190px;height:21px;z-index:5;" name="number" value="@Model.number" spellcheck="false">
+            <button type="submit" class="btn btn-primary"  style="position:absolute;left:10px;top:98px;width:110px;height:39px;z-index:6;" >確定</button>
+        </form>
+    </div>*@
+
+
+@* 上排導覽列 *@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">物料管理系統 &nbsp;(學生:蕭維均&nbsp;學號:1100336)</a>
+    </div>
+</nav>
+
+
+<br>
+<br>
+<br>
+
+@* 輸入框 *@
+<div class="container">
+    <div class="row justify-content-md-center">
+        <div class="col-10">
+            <div class="card text-white bg-dark">
+                <div class="card-body">
+                    <div class="text-center"><h3>製造庫存材料新增作業</h3></div>
+
+                    <div class="container">
+
+                        <div class="row">
+                            <div class="col-6">
+
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">料號</span>
+                                    <input type="text" class="form-control" id="itemID" aria-describedby="basic-addon3">
+                                </div>
+
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">名稱</span>
+                                    <input type="text" class="form-control" id="itemName" aria-describedby="basic-addon3">
+                                </div>
+
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">數量</span>
+                                    <input type="text" class="form-control" id="itemNumber" aria-describedby="basic-addon3">
+                                </div>
+
+                                <button type="button" class="btn btn-success" id="createItemBtn">送出</button>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br>
+<br>
+<br>
+
+@* 貨物清單表格 *@
+
+<div class="container">
+    <div class="row justify-content-md-center">
+        <div class="col-10">
+            <div class="card border-dark bg-white">
+                <div class="card-body">
+                    <div class="row justify-content-md-center">
+                        <div class="col-11">
+                            <div class="text-center"><h3>庫存材料</h3></div>
+
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">搜尋材料</span>
+                                <input type="text" class="form-control" id="searchInput" aria-describedby="basic-addon3">
+                            </div>
+
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">料號</th>
+                                        <th scope="col">名稱</th>
+                                        <th scope="col">數量</th>
+                                        <th scope="col">刪除</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="itemsTable">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+    //新增材料
+    function createItem() {
+        if (isNaN($("#itemNumber").val()) || $("#itemID").val() == "" || $("#itemName").val() == "") {
+            Swal.fire({
+                title: '輸入錯誤!',
+                text: '數量請輸入數字，所有輸入欄位不得為空',
+                icon: 'error',
+                confirmButtonText: '了解'
+            })
+            return
+        }
+        $.ajax({
+            method: "POST",
+            url: "/Home/Transcripts",
+            data: {
+                id: $("#itemID").val(),
+                name: $("#itemName").val(),
+                number: $("#itemNumber").val()
+            },
+            statusCode: {
+                500: function () {
+                    Swal.fire({
+                        title: '伺服器端錯誤!',
+                        text: '請檢察是否所有的數值都有輸入',
+                        icon: 'error',
+                        confirmButtonText: '了解'
+                    })
+                },
+                200: function () {
+                    Swal.fire({
+                        title: '傳送成功!',
+                        text: '新增材料成功，伺服器進行響應',
+                        icon: 'success',
+                        confirmButtonText: '完成'
+                    })
+                }
+            }
+        })
+            .done(function (msg) {
+                getItemsList()
+            });
+    }
+
+    //ajax取得表格資料
+    function getItemsList() {
+
+        $.ajax({
+            method: "GET",
+            url: "/Home/getItemsList",
+        })
+            .done(function (msg) {
+                var itemsData = JSON.parse(msg)
+                //alert(itemsData.data[0].ID)
+                $("#itemsTable").empty()
+                for (i = 0; i < itemsData.data.length; i++) {
+                    $("#itemsTable").append("<tr><td>" + itemsData.data[i].ID + "</td><td>" + itemsData.data[i].Name + "</td><td>" + itemsData.data[i].Number + "</td>" + "<td style='padding:2px'>" + '<button type="button" class="btn btn-danger" onclick="DeleteByID(\'' + itemsData.data[i].ID +'\')">刪除</button>'+"</td>" + "</tr>")
+                }
+            });
+    }
+
+    //以ID刪除資料
+    function DeleteByID(id) {
+        $.ajax({
+            method: "POST",
+            url: "/Home/DeleteByID",
+            data: {
+                ID:id,
+            },
+            statusCode: {
+                500: function () {
+                    Swal.fire({
+                        title: '伺服器端錯誤!',
+                        text: '請檢察是否所有的數值都有輸入',
+                        icon: 'error',
+                        confirmButtonText: '了解'
+                    })
+                },
+                200: function () {
+                    Swal.fire({
+                        title: '傳送成功!',
+                        text: '新增材料成功，伺服器進行響應',
+                        icon: 'success',
+                        confirmButtonText: '完成'
+                    })
+                }
+            }
+        })
+            .done(function (msg) {
+                getItemsSearchList()
+            });
+
+    }
+
+    //ajax取得搜尋表格資料
+    function getItemsSearchList() {
+
+        searchInputValue = $("#searchInput").val()
+        searchInputValue = searchInputValue.replace(/\s*/g, "")
+
+        if (searchInputValue == "" || searchInputValue.length == 0) {
+            getItemsList()
+        } else {
+
+
+        $.ajax({
+            method: "GET",
+            url: "/Home/getItemsSearchList",
+            data: {
+                search: searchInputValue,
+            },
+        })
+            .done(function (msg) {
+                var itemsData = JSON.parse(msg)
+                $("#itemsTable").empty()
+                for (i = 0; i < itemsData.data.length; i++) {
+                    $("#itemsTable").append("<tr><td>" + itemsData.data[i].ID + "</td><td>" + itemsData.data[i].Name + "</td><td>" + itemsData.data[i].Number + "</td>" + "<td style='padding:2px'>" + '<button type="button" class="btn btn-danger" onclick="DeleteByID(\'' + itemsData.data[i].ID + '\')">刪除</button>' + "</td>" + "</tr>")
+                }
+            });
+
+        }
+    }
+
+    $(document).ready(function () {
+
+        getItemsList()
+
+        $("#createItemBtn").click(function () {
+            createItem()
+        });
+
+        $("#searchInput").on("input", function () {
+            getItemsSearchList()
+        });
+
+    });
+</script>
